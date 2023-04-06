@@ -10,6 +10,10 @@ public function transformToFHIR(hl7:Message message) returns json {
         return ADR_A19ToPatient(message);
     } else if message is hl7v23:ADT_A01 {
         return ADT_A01ToPatient(message);
+    } else if message is hl7v23:ADT_A04 {
+        return ADT_A04ToPatient(message);
+    } else if message is hl7v23:ORU_R01 {
+        return ORU_R01ToPatient(message);
     } else {
         return getOperationOutcome("Unsupported message type.");
     }
@@ -33,6 +37,37 @@ function ADT_A01ToPatient(hl7v23:ADT_A01 adtA01) returns r4:Patient => {
     deceasedDateTime: adtA01.pid.pid29.ts1, 
     deceasedBoolean: GetHL7_PID_PatientDeathIndicator(adtA01.pid.pid30) 
 };
+
+
+function ADT_A04ToPatient(hl7v23:ADT_A04 msg) returns r4:Patient => {
+    name: GetHL7_PID_PatientName(msg.pid.pid5, msg.pid.pid9),             
+    birthDate: msg.pid.pid7.ts1,                                             
+    gender: GetHL7_PID_AdministrativeSex(msg.pid.pid8),                      
+    address: GetHL7_PID_Address(msg.pid.pid12, msg.pid.pid11),            
+    telecom: GetHL7_PID_PhoneNumber(msg.pid.pid13, msg.pid.pid14),        
+    communication: GetHL7_PID_PrimaryLanguage(msg.pid.pid15),                
+    maritalStatus: {
+        coding: GetHL7_PID_MaritalStatus(msg.pid.pid16)                      
+    },
+    identifier: GetHL7_PID_SSNNumberPatient(msg.pid.pid19),                  
+    extension: GetHL7_PID_BirthPlace(msg.pid.pid23),                         
+    multipleBirthBoolean: GetHL7_PID_MultipleBirthIndicator(msg.pid.pid24),  
+    multipleBirthInteger: GetHL7_PID_BirthOrder(msg.pid.pid25),              
+    deceasedDateTime: msg.pid.pid29.ts1,                                     
+    deceasedBoolean: GetHL7_PID_PatientDeathIndicator(msg.pid.pid30)         
+};
+
+function ORU_R01ToPatient(hl7v23:ORU_R01 msg) returns r4:Patient[] {
+    hl7v23:RESPONSE[] responses = msg.response;
+    r4:Patient[] patientArr = [];
+    foreach hl7v23:RESPONSE res in responses {
+        if res.patient.pid is hl7v23:PID {
+            r4:Patient patient = PIDToPatient(<hl7v23:PID>res.patient.pid);
+            patientArr.push(patient);
+        }
+    }
+    return patientArr;
+}
 
 function ADR_A19ToPatient(hl7v23:ADR_A19 adrA19) returns r4:Patient[] {
 

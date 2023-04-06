@@ -402,7 +402,7 @@ modules = [
 [[package]]
 org = "wso2healthcare"
 name = "healthcare.hl7v23"
-version = "0.1.6"
+version = "0.1.7"
 dependencies = [
 	{org = "ballerina", name = "log"},
 	{org = "ballerina", name = "regex"},
