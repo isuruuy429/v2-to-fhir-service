@@ -10,6 +10,8 @@ public function transformToFHIR(hl7:Message message) returns json {
         return ADR_A19ToPatient(message);
     } else if message is hl7v23:ADT_A01 {
         return ADT_A01ToPatient(message);
+    } else {
+        return getOperationOutcome("Unsupported message type.");
     }
 }
 

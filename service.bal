@@ -1,7 +1,9 @@
 import ballerina/http;
-// import wso2healthcare/healthcare.hl7;
-import wso2healthcare/healthcare.hl7v23;
+import wso2healthcare/healthcare.hl7;
 import ballerina/log;
+import ballerina/regex;
+
+hl7:HL7Parser parser = new ();
 
 # A service representing a network-accessible API
 # bound to port `9090`.
@@ -11,11 +13,20 @@ service / on new http:Listener(9090) {
     # + return - transformed message as a json
     resource function post v2tofhir/transform(http:RequestContext ctx, http:Request request) returns json|error {
         // extract the payload from the request
-        json hl7Message = check request.getJsonPayload();
-        hl7v23:ADR_A19 clonedMessageRecord = check hl7Message.cloneWithType(hl7v23:ADR_A19);
-        // transform the message to fhir
-        json transformToFHIRResult = transformToFHIR(clonedMessageRecord);
-        log:printInfo("Transformed FHIR message: " + transformToFHIRResult.toString());
-        return transformToFHIRResult;
+
+        string textPayload = check request.getTextPayload();
+        string preprocessedPayload = regex:replaceAll(textPayload, "\n", "\r");
+
+        byte[] hL7WirePayload = hl7:createHL7WirePayload(preprocessedPayload.toBytes());
+        hl7:Message|hl7:HL7Error parsedMessage = parser.parse(hL7WirePayload);
+        if parsedMessage is hl7:Message {
+            // transform the message to fhir
+            json transformToFHIRResult = transformToFHIR(parsedMessage);
+            log:printInfo("Transformed FHIR message: " + transformToFHIRResult.toString());
+            return transformToFHIRResult;
+        } else {
+            log:printError("Error occurred while parsing HL7 message.", parsedMessage);
+            return getOperationOutcome(parsedMessage.message());
+        }
     }
 }

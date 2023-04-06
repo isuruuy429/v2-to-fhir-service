@@ -80,3 +80,21 @@ public function ComparisononOp_IN(string x, string[] valueList) returns boolean 
 
     return false;
 }
+
+// This utility function is used to construct the OperationOutcome resource for error scenarios.
+public isolated function getOperationOutcome(string detail) returns json {
+
+    r4:OperationOutcome operationOutcome = {
+        resourceType: "OperationOutcome",
+        issue: [
+            {
+                severity: "error",
+                code: "error",
+                details: {
+                    text: detail
+                }
+            }
+        ]
+    };
+    return operationOutcome;
+}
