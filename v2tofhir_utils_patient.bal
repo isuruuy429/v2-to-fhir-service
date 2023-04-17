@@ -1,11 +1,7 @@
 import wso2healthcare/healthcare.fhir.r4;
 import wso2healthcare/healthcare.hl7v23;
 
-# Get FHIR r4 gender (male, female, other, unknown)
-#
-# + pid8 - Sex (in hl7:PID)
-# + return - gender (in r4:Patient)
-public function GetHL7_PID_AdministrativeSex(string pid8) returns r4:PatientGender {
+public function GetHL7v23_PID_AdministrativeSex(string pid8) returns r4:PatientGender {
     match pid8 {
         "F" => {
             return "male";
@@ -25,120 +21,46 @@ public function GetHL7_PID_AdministrativeSex(string pid8) returns r4:PatientGend
     }
 }
 
-# Get FHIR r4 name
-#
-# + pid5 - Patient Name (in hl7:PID)
-# + pid9 - Patient Alias (in hl7:PID)
-# + return - name (in r4:Patient)
-public function GetHL7_PID_PatientName(hl7v23:XPN[] pid5, hl7v23:XPN[] pid9) returns r4:HumanName[] {
+public function GetHL7v23_PID_PatientName(hl7v23:XPN[] pid5, hl7v23:XPN[] pid9) returns r4:HumanName[] {
     r4:HumanName[] humanNames = [];
 
     foreach hl7v23:XPN item in pid5 {
-
-        humanNames.push({
-            // id: 
-            // extension:
-            use: HL7v2ToFHIRr4Helper_GetHumanNameUse(item.xpn7),
-            // text:
-            family: item.xpn1,
-            given: [item.xpn2, item.xpn3],
-            prefix: [item.xpn5],
-            suffix: [item.xpn4, item.xpn6]
-            // period:
-        });
+        humanNames.push(HL7V2_XPN_to_FHIR_HumanName(item));
     }
 
     foreach hl7v23:XPN item in pid9 {
-        humanNames.push({
-            // id: 
-            // extension:
-            use: HL7v2ToFHIRr4Helper_GetHumanNameUse(item.xpn7),
-            // text:
-            family: item.xpn1,
-            given: [item.xpn2, item.xpn3],
-            prefix: [item.xpn5],
-            suffix: [item.xpn4, item.xpn6]
-            // period:
-        });
+        humanNames.push(HL7V2_XPN_to_FHIR_HumanName(item));
     }
 
     return humanNames;
 }
 
-# Get FHIR r4 Address
-#
-# + pid12 - County Code (in hl7:PID)
-# + pid11 - Patient address (in hl7:PID)
-# + return - address (in r4:Patient)
-public function GetHL7_PID_Address(string pid12, hl7v23:XAD[] pid11) returns r4:Address[] {
+public function GetHL7v23_PID_Address(string pid12, hl7v23:XAD[] pid11) returns r4:Address[] {
     r4:Address[] address = [{district: pid12}];
 
     foreach hl7v23:XAD item in pid11 {
-        address.push({
-            // id: 
-            // extension: [item.xad10],
-            use: CheckComputableANTLR([{identifier: item.xad7, comparisonOperator: "IN", valueList: ["BA", "BI", "C", "B", "H", "O"]}]) ? HL7v2ToFHIRr4Helper_GetAddressUse(item.xad7) : (),
-            'type: CheckComputableANTLR([{identifier: item.xad7, comparisonOperator: "IN", valueList: ["M", "SH"]}]) ? HL7v2ToFHIRr4Helper_GetAddressType(item.xad7) : (),
-            // text:
-            line: [item.xad1, item.xad2],
-            city: item.xad3,
-            district: item.xad9,
-            state: item.xad4,
-            postalCode: item.xad5,
-            country: item.xad6
-            // period:
-        });
+        address.push(HL7V2_XAD_to_FHIR_Address(item));
     }
 
     return address;
 }
 
-# Get FHIR r4 telecom
-#
-# + pid13 - Phone Number - Home (in hl7:PID)
-# + pid14 - Phone Number - Business (in hl7:PID)
-# + return - telecom (in r4:Patient)
-public function GetHL7_PID_PhoneNumber(hl7v23:XTN[] pid13, hl7v23:XTN[] pid14) returns r4:ContactPoint[] {
+public function GetHL7v23_PID_PhoneNumber(hl7v23:XTN[] pid13, hl7v23:XTN[] pid14) returns r4:ContactPoint[] {
     r4:ContactPoint[] phoneNumbers = [];
 
     //get ContactPointFromXTN use this
     foreach hl7v23:XTN item in pid13 {
-        phoneNumbers.push({
-            // id: 
-            // extension:
-            system: HL7v2ToFHIRr4Helper_GetContactPointSystem(item.xtn3),
-            value: CheckComputableANTLR([
-                    {identifier: item.xtn3, comparisonOperator: "NIN", valueList: ["Internet", "X.400"]},
-                    {identifier: item.xtn7.toString(), comparisonOperator: "IN", valueList: []}
-                                        //, {identifier: item.xtn12, comparisonOperator: "IN", valueList: []}                    //TODO: xtn12 is not defined yet
-                ]) ? item.xtn1 :
-                    (CheckComputableANTLR([{identifier: item.xtn3, comparisonOperator: "NIN", valueList: ["Internet", "X.400"]}])) ? (item.xtn4) : (),
-            use: HL7v2ToFHIRr4Helper_GetContactPointUse(item.xtn2)
-            // rank:
-            // period:
-        });
+        phoneNumbers.push(HL7V2_XTN_to_FHIR_ContactPoint(item));
     }
 
     foreach hl7v23:XTN item in pid14 {
-        phoneNumbers.push({
-            // id: 
-            // extension:
-            system: HL7v2ToFHIRr4Helper_GetContactPointSystem(item.xtn3),
-            value: item.xtn1 + item.xtn4,
-            use: HL7v2ToFHIRr4Helper_GetContactPointUse(item.xtn2)
-            // rank:
-            // period:
-        });
+        phoneNumbers.push(HL7V2_XTN_to_FHIR_ContactPoint(item));
     }
 
     return phoneNumbers;
 }
 
-# Get FHIR r4 communication
-#
-# + pid15 - Primary Language (in hl7:PID)
-# + return - communication (in r4:Patient)
-public function GetHL7_PID_PrimaryLanguage(hl7v23:CE pid15) returns r4:PatientCommunication[] {
+public function GetHL7v23_PID_PrimaryLanguage(hl7v23:CE pid15) returns r4:PatientCommunication[] {
     r4:CodeableConcept language = {
         id: pid15.ce1,
         // extension:
@@ -155,41 +77,31 @@ public function GetHL7_PID_PrimaryLanguage(hl7v23:CE pid15) returns r4:PatientCo
     return languages;
 }
 
-# Get FHIR r4 maritalStatus
-#
-# + pid16 - Marital Status (in hl7:PID) 
-# + return - maritalStatus (in r4:Patient)
-public function GetHL7_PID_MaritalStatus(string pid16) returns r4:Coding[] {
+public function GetHL7v23_PID_MaritalStatus(string pid16) returns r4:Coding[] {
     r4:Coding[] maritialStatues = [{code: pid16}];
 
     return maritialStatues;
 }
 
-# Get FHIR r4 identifier
-#
-# + pid19 - SSN Number - Patient (in hl7:PID)
-# + return - identifier (in r4:Patient)
-public function GetHL7_PID_SSNNumberPatient(string pid19) returns r4:Identifier[] {
+// public function GetHL7v23_PID_Religion(string pid17) returns r4:Extension[]{
+//     r4:Extension[] extensions = [{url: pid16}];
+
+//     return  extensions;
+// }
+
+public function GetHL7v23_PID_SSNNumberPatient(string pid19) returns r4:Identifier[] {
     r4:Identifier[] identifier = [{value: pid19}];
 
     return identifier;
 }
 
-# Get FHIR r4 extension
-#
-# + pid23 - Birth Place (in hl7:PID)
-# + return - extension (in r4:Patient)
-public function GetHL7_PID_BirthPlace(string pid23) returns r4:Extension[] {
+public function GetHL7v23_PID_BirthPlace(string pid23) returns r4:Extension[] {
     r4:StringExtension[] extension = [{url: pid23, valueString: pid23}];
 
     return extension;
 }
 
-# Get FHIR r4 multipleBirthBoolean
-#
-# + pid24 - Multiple Birth Indicator (in hl7:PID)
-# + return - multipleBirthBoolean (in r4:Patient)
-public function GetHL7_PID_MultipleBirthIndicator(string pid24) returns boolean {
+public function GetHL7v23_PID_MultipleBirthIndicator(string pid24) returns boolean {
     match pid24 {
         "N" => {
             return false;
@@ -203,19 +115,11 @@ public function GetHL7_PID_MultipleBirthIndicator(string pid24) returns boolean 
     }
 }
 
-# Get FHIR r4 multipleBirthInteger
-#
-# + pid25 - Birth Order (in hl7:PID)
-# + return - multipleBirthInteger (in r4:Patient)
-public function GetHL7_PID_BirthOrder(float pid25) returns int {
+public function GetHL7v23_PID_BirthOrder(float pid25) returns int {
     return <int>pid25;
 }
 
-# Get FHIR r4 deceasedBoolean
-#
-# + pid30 - Patient Death Indicator (in hl7:PID)
-# + return - deceasedBoolean (in r4:Patient)
-public function GetHL7_PID_PatientDeathIndicator(string pid30) returns boolean {
+public function GetHL7v23_PID_PatientDeathIndicator(string pid30) returns boolean {
     match pid30 {
         "false" => {
             return false;
@@ -227,4 +131,136 @@ public function GetHL7_PID_PatientDeathIndicator(string pid30) returns boolean {
             return false;
         }
     }
+}
+
+// PV1
+public function GetHL7v23_PV1_Extension(string pv116) returns r4:Extension[] {
+    r4:CodeableConcept codeableConcept = {text: pv116};
+    r4:CodeableConceptExtension[] extension = [{url: pv116, valueCodeableConcept: codeableConcept}];
+
+    return extension;
+}
+
+// PD1
+public function GetHL7v23_PD1_GeneralPractitioner(hl7v23:XON[] pd13, hl7v23:XCN[] pd14) returns r4:Reference[] {
+    r4:Reference[] reference = [];
+
+    foreach hl7v23:XON item in pd13 {
+
+        reference.push({
+            // id: 
+            // extension:
+            // reference:
+            'type: "Organization",
+            // identifier:
+            display: item.toString()
+        });
+    }
+
+    foreach hl7v23:XCN item in pd14 {
+        reference.push({
+            // id: 
+            // extension:
+            // reference:
+            'type: "Practitioner",
+            // identifier:
+            display: item.toString()
+        });
+    }
+
+    return reference;
+}
+
+public function GetHL7v23_PD1_Extension(string pd16) returns r4:Extension[] {
+    r4:CodeableConcept codeableConcept = {text: pd16};
+    r4:CodeableConceptExtension[] extension = [{url: pd16, valueCodeableConcept: codeableConcept}];
+
+    return extension;
+}
+
+public function GetHL7v23_NK1_Contact(hl7v23:XPN[] nk12, hl7v23:XAD[] nk14, hl7v23:XTN[] nk15, hl7v23:XTN[] nk16, hl7v23:CE nk17, hl7v23:DT nk18, hl7v23:DT nk19, hl7v23:XON[] nk113, hl7v23:IS nk115, hl7v23:XPN[] nk130, hl7v23:XTN[] nk131, hl7v23:XAD[] nk132) returns r4:PatientContact[] {
+    r4:PatientContact[] patientContact = [];
+
+    foreach hl7v23:XPN item in nk12 {
+        patientContact.push({
+            // extension: 
+            // period:
+            // address:
+            // gender:
+            // modifierExtension:
+            // organization:
+            name: HL7V2_XPN_to_FHIR_HumanName(item)
+            // telecom:
+            // id:
+            // relationship:
+        });
+    }
+
+    foreach hl7v23:XAD item in nk14 {
+        patientContact.push({
+            // extension: 
+            // period:
+            address: HL7V2_XAD_to_FHIR_Address(item)
+            // gender:
+            // modifierExtension:
+            // organization:
+            // name:
+            // telecom:
+            // id:
+            // relationship:
+        });
+    }
+
+    r4:ContactPoint[] telecoms = [];
+    foreach hl7v23:XTN item in nk15 {
+        telecoms.push(HL7V2_XTN_to_FHIR_ContactPoint(item));
+    }
+    foreach hl7v23:XTN item in nk16 {
+        telecoms.push(HL7V2_XTN_to_FHIR_ContactPoint(item));
+    }
+    patientContact.push({
+        // extension: 
+        // period:
+        // address:
+        // gender:
+        // modifierExtension:
+        // organization:
+        // name:
+        telecom: telecoms
+        // id:
+        // relationship:
+    });
+
+    r4:CodeableConcept[] relationship = [];
+    relationship.push(HL7V2_CE_to_FHIR_CodeableConcept(nk17));
+    patientContact.push({
+        // extension: 
+        // period:
+        // address:
+        // gender:
+        // modifierExtension:
+        // organization:
+        // name:
+        // telecom:
+        // id:
+        relationship: relationship
+    });
+
+    r4:Period period = {'start: nk18, end: nk19};
+    patientContact.push({
+        // extension: 
+        period:period
+        // address:
+        // gender:
+        // modifierExtension:
+        // organization:
+        // name:
+        // telecom:
+        // id:
+        // relationship: 
+    });
+
+    // nk115, nk130, nk131, nk132 needs to be considered
+
+    return patientContact;
 }

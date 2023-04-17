@@ -1,102 +1,52 @@
 import wso2healthcare/healthcare.hl7v23;
-import wso2healthcare/healthcare.fhir.r4;
 import wso2healthcare/healthcare.hl7;
+import wso2healthcare/healthcare.fhir.r4;
 
 public function transformToFHIR(hl7:Message message) returns json {
+    r4:Bundle bundle = {'type: "searchset"};
+    r4:BundleEntry[] entries = [];
+    bundle.entry = entries;
     if message is hl7v23:ADR_A19 {
         // This utility function is used to convert ADR_A19 message into FHIR Patient resources. This has pre-build mapping done from the
         // Implementation guide: https://build.fhir.org/ig/HL7/v2-to-fhir/branches/master/index.html.
         // In upcoming releases these utility functions will be provided as inbuilt mapping functions by WSO2 Healthcare Accelerator packages.
-        return ADR_A19ToPatient(message);
+        r4:Patient[] patients = HL7V23_ADR_A19ToPatient(message);
+        foreach r4:Patient patient in patients {
+            r4:BundleEntry entry = {'resource: patient};
+            entries.push(entry);
+        }
+        return bundle.toJson();
     } else if message is hl7v23:ADT_A01 {
-        return ADT_A01ToPatient(message);
+        r4:Patient patient = HL7V23_ADT_A01ToPatient(message);
+        entries.push({'resource: patient});
+        return bundle.toJson();
     } else if message is hl7v23:ADT_A04 {
-        return ADT_A04ToPatient(message);
+        r4:Patient patient = HL7V23_ADT_A04ToPatient(message);
+        entries.push({'resource: patient});
+        return bundle.toJson();
     } else if message is hl7v23:ORU_R01 {
-        return ORU_R01ToPatient(message);
+        r4:Patient[] patients = HL7V23_ORU_R01ToPatient(message);
+        foreach r4:Patient patient in patients {
+            r4:BundleEntry entry = {'resource: patient};
+            entries.push(entry);
+        }
+        return bundle.toJson();
     } else {
+        message.entries().forEach(function(anydata triggerEventField) {
+            string key;
+            anydata segment;
+            [key, segment] = <[string, anydata]>triggerEventField;
+            if segment is hl7:Segment {
+                r4:BundleEntry[] bundleEntries = Generic_Segment_To_FHIR(segment.name, segment);
+                foreach r4:BundleEntry entry in bundleEntries {
+                    entries.push(entry);
+                }
+            }
+        });
+        if entries.length() > 0 {
+            return bundle.toJson();
+        }
         return getOperationOutcome("Unsupported message type.");
     }
 }
 
-function ADT_A01ToPatient(hl7v23:ADT_A01 adtA01) returns r4:Patient => {
-
-    name: GetHL7_PID_PatientName(adtA01.pid.pid5, adtA01.pid.pid9), 
-    birthDate: adtA01.pid.pid7.ts1, 
-    gender: GetHL7_PID_AdministrativeSex(adtA01.pid.pid8), 
-    address: GetHL7_PID_Address(adtA01.pid.pid12, adtA01.pid.pid11), 
-    telecom: GetHL7_PID_PhoneNumber(adtA01.pid.pid13, adtA01.pid.pid14), 
-    communication: GetHL7_PID_PrimaryLanguage(adtA01.pid.pid15), 
-    maritalStatus: {
-        coding: GetHL7_PID_MaritalStatus(adtA01.pid.pid16) 
-    },
-    identifier: GetHL7_PID_SSNNumberPatient(adtA01.pid.pid19), 
-    extension: GetHL7_PID_BirthPlace(adtA01.pid.pid23), 
-    multipleBirthBoolean: GetHL7_PID_MultipleBirthIndicator(adtA01.pid.pid24), 
-    multipleBirthInteger: GetHL7_PID_BirthOrder(adtA01.pid.pid25), 
-    deceasedDateTime: adtA01.pid.pid29.ts1, 
-    deceasedBoolean: GetHL7_PID_PatientDeathIndicator(adtA01.pid.pid30) 
-};
-
-
-function ADT_A04ToPatient(hl7v23:ADT_A04 msg) returns r4:Patient => {
-    name: GetHL7_PID_PatientName(msg.pid.pid5, msg.pid.pid9),             
-    birthDate: msg.pid.pid7.ts1,                                             
-    gender: GetHL7_PID_AdministrativeSex(msg.pid.pid8),                      
-    address: GetHL7_PID_Address(msg.pid.pid12, msg.pid.pid11),            
-    telecom: GetHL7_PID_PhoneNumber(msg.pid.pid13, msg.pid.pid14),        
-    communication: GetHL7_PID_PrimaryLanguage(msg.pid.pid15),                
-    maritalStatus: {
-        coding: GetHL7_PID_MaritalStatus(msg.pid.pid16)                      
-    },
-    identifier: GetHL7_PID_SSNNumberPatient(msg.pid.pid19),                  
-    extension: GetHL7_PID_BirthPlace(msg.pid.pid23),                         
-    multipleBirthBoolean: GetHL7_PID_MultipleBirthIndicator(msg.pid.pid24),  
-    multipleBirthInteger: GetHL7_PID_BirthOrder(msg.pid.pid25),              
-    deceasedDateTime: msg.pid.pid29.ts1,                                     
-    deceasedBoolean: GetHL7_PID_PatientDeathIndicator(msg.pid.pid30)         
-};
-
-function ORU_R01ToPatient(hl7v23:ORU_R01 msg) returns r4:Patient[] {
-    hl7v23:RESPONSE[] responses = msg.response;
-    r4:Patient[] patientArr = [];
-    foreach hl7v23:RESPONSE res in responses {
-        if res.patient.pid is hl7v23:PID {
-            r4:Patient patient = PIDToPatient(<hl7v23:PID>res.patient.pid);
-            patientArr.push(patient);
-        }
-    }
-    return patientArr;
-}
-
-function ADR_A19ToPatient(hl7v23:ADR_A19 adrA19) returns r4:Patient[] {
-
-    hl7v23:QUERY_RESPONSE[] queryResponses = adrA19.query_response;
-    r4:Patient[] patientArr = [];
-    foreach hl7v23:QUERY_RESPONSE queryResponse in queryResponses {
-        if queryResponse.pid is hl7v23:PID {
-            r4:Patient patient = PIDToPatient(<hl7v23:PID>queryResponse.pid);
-            patientArr.push(patient);
-        }
-    }
-    return patientArr;
-}
-
-function PIDToPatient(hl7v23:PID pid) returns r4:Patient => {
-    
-    name: GetHL7_PID_PatientName(pid.pid5, pid.pid9),
-    birthDate: pid.pid7.ts1,
-    gender: GetHL7_PID_AdministrativeSex(pid.pid8),
-    address: GetHL7_PID_Address(pid.pid12, pid.pid11),
-    telecom: GetHL7_PID_PhoneNumber(pid.pid13, pid.pid14),
-    communication: GetHL7_PID_PrimaryLanguage(pid.pid15),
-    maritalStatus: {
-        coding: GetHL7_PID_MaritalStatus(pid.pid16)
-    },
-    identifier: GetHL7_PID_SSNNumberPatient(pid.pid19),
-    extension: GetHL7_PID_BirthPlace(pid.pid23),
-    multipleBirthBoolean: GetHL7_PID_MultipleBirthIndicator(pid.pid24),
-    multipleBirthInteger: GetHL7_PID_BirthOrder(pid.pid25),
-    deceasedDateTime: pid.pid29.ts1,
-    deceasedBoolean: GetHL7_PID_PatientDeathIndicator(pid.pid30)
-};

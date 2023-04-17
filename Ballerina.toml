@@ -11,3 +11,8 @@ observabilityIncluded = true
 org = "wso2healthcare"
 name = "healthcare.fhir.r4"
 version = "0.1.13"
+
+[[dependency]]
+org = "wso2healthcare"
+name = "healthcare.hl7v23"
+version = "0.1.8"
