@@ -343,7 +343,9 @@ dependencies = [
 	{org = "ballerinai", name = "observe"},
 	{org = "wso2healthcare", name = "healthcare.fhir.r4"},
 	{org = "wso2healthcare", name = "healthcare.hl7"},
-	{org = "wso2healthcare", name = "healthcare.hl7v23"}
+	{org = "wso2healthcare", name = "healthcare.hl7v23"},
+	{org = "wso2healthcare", name = "healthcare.hl7v24"},
+	{org = "wso2healthcare", name = "healthcare.hl7v25"}
 ]
 modules = [
 	{org = "sameeragunarathne", packageName = "v2_to_fhir_service", moduleName = "v2_to_fhir_service"}
@@ -410,6 +412,32 @@ dependencies = [
 ]
 modules = [
 	{org = "wso2healthcare", packageName = "healthcare.hl7v23", moduleName = "healthcare.hl7v23"}
+]
+
+[[package]]
+org = "wso2healthcare"
+name = "healthcare.hl7v24"
+version = "0.1.0"
+dependencies = [
+	{org = "ballerina", name = "log"},
+	{org = "ballerina", name = "regex"},
+	{org = "wso2healthcare", name = "healthcare.hl7"}
+]
+modules = [
+	{org = "wso2healthcare", packageName = "healthcare.hl7v24", moduleName = "healthcare.hl7v24"}
+]
+
+[[package]]
+org = "wso2healthcare"
+name = "healthcare.hl7v25"
+version = "0.1.0"
+dependencies = [
+	{org = "ballerina", name = "log"},
+	{org = "ballerina", name = "regex"},
+	{org = "wso2healthcare", name = "healthcare.hl7"}
+]
+modules = [
+	{org = "wso2healthcare", packageName = "healthcare.hl7v25", moduleName = "healthcare.hl7v25"}
 ]
 
 
