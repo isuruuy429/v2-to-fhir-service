@@ -42,6 +42,19 @@ public function transformToFHIR(hl7:Message message) returns json {
                     entries.push(entry);
                 }
             }
+            if segment is hl7:SegmentComponent {
+                segment.entries().forEach(function(anydata segmentComponentField) {
+                    string groupKey;
+                    anydata segmentComponent;
+                    [groupKey, segmentComponent] = <[string, anydata]>segmentComponentField;
+                    if segmentComponent is hl7:Segment {
+                        r4:BundleEntry[] bundleEntries = Generic_Segment_To_FHIR(segmentComponent.name, segmentComponent);
+                        foreach r4:BundleEntry entry in bundleEntries {
+                            entries.push(entry);
+                        }
+                    }
+                });
+            }
         });
         if entries.length() > 0 {
             return bundle.toJson();
