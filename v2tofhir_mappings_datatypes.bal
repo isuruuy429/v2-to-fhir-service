@@ -65,14 +65,14 @@ function HL7V2_CE_to_FHIR_Coding(hl7v23:CE ce) returns r4:Coding => {
 
 function HL7V2_XAD_to_FHIR_Address(hl7v23:XAD xad) returns r4:Address => {
     line: [xad.xad1, xad.xad2],
-    city: xad.xad3,
-    state: xad.xad4,
-    postalCode: xad.xad5,
-    country: xad.xad6,
+    city: (xad.xad3 != "") ? xad.xad3 : (),
+    state: (xad.xad4 != "") ? xad.xad4 : (),
+    postalCode: (xad.xad5 != "") ? xad.xad5 : (),
+    country: (xad.xad6 != "") ? xad.xad6 : (),
     'type: CheckComputableANTLR([{identifier: xad.xad7, comparisonOperator: "IN", valueList: ["M", "SH"]}]) ? V2ToFHIR_GetAddressType(xad.xad7) : (),
     use: CheckComputableANTLR([{identifier: xad.xad7, comparisonOperator: "IN", valueList: ["BA", "BI", "C", "B", "H", "O"]}]) ? V2ToFHIR_GetAddressUse(xad.xad7) : (),
     extension: V2ToFHIR_GetStringExtension([xad.xad7, xad.xad10]),
-    district: xad.xad9
+    district: (xad.xad9 != "") ? xad.xad9 : ()
 };
 
 // function HL7V2_XCN_to_FHIR_Practitioner(hl7v23:XCN xcn) returns r4:Practitioner => {};
@@ -107,23 +107,49 @@ function HL7V2_XON_to_FHIR_Organization(hl7v23:XON xon) returns r4:Organization 
 
 // function HL7V2_XON_to_FHIR_string(hl7v23:XON xon) returns string => {};
 
-function HL7V2_XPN_to_FHIR_HumanName(hl7v23:XPN xpn) returns r4:HumanName => {
-    family: xpn.xpn1,
-    given: [xpn.xpn2, xpn.xpn3],
-    suffix: [xpn.xpn4, xpn.xpn6],
-    prefix: [xpn.xpn5],
-    use: V2ToFHIR_GetHumanNameUse(xpn.xpn7)
+function HL7V2_XPN_to_FHIR_HumanName(hl7v23:XPN xpn) returns r4:HumanName {
+    r4:HumanName humanName = {
+        family: (xpn.xpn1 != "") ? xpn.xpn1 : (),
+        use: (xpn.xpn7 != "") ? V2ToFHIR_GetHumanNameUse(xpn.xpn7) : ()
+    };
+    //given
+    if xpn.xpn2 != "" && xpn.xpn3 != "" {
+        humanName.given = [xpn.xpn2, xpn.xpn3];
+    } else if xpn.xpn2 != "" {
+        humanName.given = [xpn.xpn2];
+    } else if xpn.xpn3 != "" {
+        humanName.given = [xpn.xpn3];
+    }
+    //suffix
+    if xpn.xpn4 != "" && xpn.xpn6 != "" {
+        humanName.suffix = [xpn.xpn4, xpn.xpn6];
+    } else if xpn.xpn4 != "" {
+        humanName.suffix = [xpn.xpn4];
+    } else if xpn.xpn6 != "" {
+        humanName.suffix = [xpn.xpn6];
+    }
+    //prefix
+    if xpn.xpn5 != "" {
+        humanName.prefix = [xpn.xpn5];
+    }
+    return humanName;
 };
 
-function HL7V2_XTN_to_FHIR_ContactPoint(hl7v23:XTN xtn) returns r4:ContactPoint => {
-    value: CheckComputableANTLR([
-            {identifier: xtn.xtn3, comparisonOperator: "NIN", valueList: ["Internet", "X.400"]},
-            {identifier: xtn.xtn7.toString(), comparisonOperator: "IN", valueList: []}
-            //, {identifier: xtn.xtn12, comparisonOperator: "IN", valueList: []}                    //TODO: xtn12 is not defined yet
-        ]) ? xtn.xtn1 :
-            (CheckComputableANTLR([{identifier: xtn.xtn3, comparisonOperator: "NIN", valueList: ["Internet", "X.400"]}])) ? (xtn.xtn4) : (),
-    use: V2ToFHIR_GetContactPointUse(xtn.xtn2),
-    system: V2ToFHIR_GetContactPointSystem(xtn.xtn3),
-    extension: V2ToFHIR_GetIntegerExtension([<int>xtn.xtn5, <int>xtn.xtn6, <int>xtn.xtn7, <int>xtn.xtn8])
+function HL7V2_XTN_to_FHIR_ContactPoint(hl7v23:XTN xtn) returns r4:ContactPoint {
+    r4:ContactPoint contactPoint = {
+        value: CheckComputableANTLR([
+                {identifier: xtn.xtn3, comparisonOperator: "NIN", valueList: ["Internet", "X.400"]},
+                {identifier: xtn.xtn7.toString(), comparisonOperator: "IN", valueList: []}
+                //, {identifier: xtn.xtn12, comparisonOperator: "IN", valueList: []}                    //TODO: xtn12 is not defined yet
+            ]) ? xtn.xtn1 :
+                (CheckComputableANTLR([{identifier: xtn.xtn3, comparisonOperator: "NIN", valueList: ["Internet", "X.400"]}])) ? (xtn.xtn4) : (),
+        use: V2ToFHIR_GetContactPointUse(xtn.xtn2),
+        system: V2ToFHIR_GetContactPointSystem(xtn.xtn3),
+        extension: V2ToFHIR_GetIntegerExtension([<int>xtn.xtn5, <int>xtn.xtn6, <int>xtn.xtn7, <int>xtn.xtn8])
+    };
+    if contactPoint.value == "" {
+        return {};
+    }
+    return contactPoint;
 };
 

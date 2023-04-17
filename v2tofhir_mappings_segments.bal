@@ -56,27 +56,27 @@ function HL7V2_NK1_to_FHIR_Patient(hl7v23:NK1 nk1) returns r4:Patient => {
 
 function HL7V2_PD1_to_FHIR_Patient(hl7v23:PD1 pd1) returns r4:Patient => {
     generalPractitioner: GetHL7v23_PD1_GeneralPractitioner(pd1.pd13, pd1.pd14),
-    extension: GetHL7v23_PD1_Extension(pd1.pd16)
+    extension: (pd1.pd16 != "") ? GetHL7v23_PD1_Extension(pd1.pd16) : ()
 };
 
 // function HL7V2_PID_to_FHIR_Account(hl7v23:PID pid) returns r4:Account => {};
 
 function HL7V2_PID_to_FHIR_Patient(hl7v23:PID pid) returns r4:Patient => {
     name: GetHL7v23_PID_PatientName(pid.pid5, pid.pid9),
-    birthDate: pid.pid7.ts1,
+    birthDate: (pid.pid7.ts1 != "") ? pid.pid7.ts1 : (),
     gender: GetHL7v23_PID_AdministrativeSex(pid.pid8),
     address: GetHL7v23_PID_Address(pid.pid12, pid.pid11),
     telecom: GetHL7v23_PID_PhoneNumber(pid.pid13, pid.pid14),
     communication: GetHL7v23_PID_PrimaryLanguage(pid.pid15),
     maritalStatus: {
-        coding: GetHL7v23_PID_MaritalStatus(pid.pid16)
+        coding: (pid.pid16 != "") ? GetHL7v23_PID_MaritalStatus(pid.pid16) : ()
     },
     identifier: GetHL7v23_PID_SSNNumberPatient(pid.pid19),
-    extension: GetHL7v23_PID_BirthPlace(pid.pid23),
-    multipleBirthBoolean: GetHL7v23_PID_MultipleBirthIndicator(pid.pid24),
-    multipleBirthInteger: GetHL7v23_PID_BirthOrder(pid.pid25),
-    deceasedDateTime: pid.pid29.ts1,
-    deceasedBoolean: GetHL7v23_PID_PatientDeathIndicator(pid.pid30)
+    extension: (pid.pid23 != "") ? GetHL7v23_PID_BirthPlace(pid.pid23) : (),
+    multipleBirthBoolean: (pid.pid24 != "") ? GetHL7v23_PID_MultipleBirthIndicator(pid.pid24) : (),
+    multipleBirthInteger: (pid.pid25 != -1.0) ? GetHL7v23_PID_BirthOrder(pid.pid25) : (),
+    deceasedDateTime: (pid.pid29.ts1 != "") ? pid.pid29.ts1 : (),
+    deceasedBoolean: (pid.pid30 != "") ? GetHL7v23_PID_PatientDeathIndicator(pid.pid30) : ()
 };
 
 // function HL7V2_PID_to_FHIR_Observation(hl7v23:PID pid) returns r4:Observation => {};
@@ -85,7 +85,7 @@ function HL7V2_PID_to_FHIR_Patient(hl7v23:PID pid) returns r4:Patient => {
 // function HL7V2_PV1_to_FHIR_Encounter(hl7v23:PV1 pv1) returns r4:Encounter => {};
 
 function HL7V2_PV1_to_FHIR_Patient(hl7v23:PV1 pv1) returns r4:Patient => {
-    extension: GetHL7v23_PV1_Extension(pv1.pv116)
+    extension: (pv1.pv116 != "") ? GetHL7v23_PV1_Extension(pv1.pv116) : ()
 };
 
 // function HL7V2_PV2_to_FHIR_Encounter(hl7v23:PV2 pv2) returns r4:Encounter => {};
