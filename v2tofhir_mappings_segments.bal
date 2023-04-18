@@ -218,3 +218,23 @@ function HL7V2_DG1_to_FHIR_Condition(hl7v23:DG1 dg1) returns r4:Condition => {
     subject: {}
 };
 
+function HL7V2_OBX_to_FHIR_Observation(hl7v23:OBX obx) returns r4:Observation => {
+    code: HL7V2_CE_to_FHIR_CodeableConcept(obx.obx3),
+    valueQuantity: {
+        value: <decimal>obx.obx5[0]
+    },
+    valueString: <string>obx.obx5[0],
+    valueCodeableConcept: <r4:CodeableConcept>obx.obx5[0],
+    valuePeriod: <r4:Period>obx.obx5[0],
+    valueDateTime: <r4:dateTime>obx.obx5[0],
+    valueRange: <r4:Range>obx.obx5[0],
+    valueTime: <r4:time>obx.obx5[0],
+    valueRatio: <r4:Ratio>obx.obx5[0],
+    valueSampledData: {origin: {}, period: 0, dimensions: 0},
+    dataAbsentReason: HL7V2_ID_to_FHIR_CodeableConcept(obx.obx11),
+    effectiveDateTime: HL7V2_TS_to_FHIR_dateTime(obx.obx14),
+    // performer: [HL7V2_CE_to_FHIR_Organization(obx.obx15)],
+    method: HL7V2_CE_to_FHIR_CodeableConcept(obx.obx17[0]),
+    status: "preliminary"
+};
+
