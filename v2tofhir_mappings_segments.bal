@@ -63,7 +63,6 @@ function HL7V2_MSH_to_FHIR_MessageHeader(hl7v23:MSH msh) returns r4:MessageHeade
     'source: HL7V2_HD_to_FHIR_MessageHeader_source(msh.msh3),
     destination: [HL7V2_HD_to_FHIR_MessageHeader_destination(msh.msh5)],
     eventCoding: HL7V2_MSG_to_FHIR_Coding(msh.msh9),
-    meta: <r4:BaseMessageHeaderMeta>HL7V2_PT_to_FHIR_Meta(msh.msh11),
     language: HL7V2_CE_to_FHIR_code(msh.msh19),
     eventUri: ""
 };
