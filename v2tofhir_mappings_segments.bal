@@ -35,6 +35,26 @@ function Generic_Segment_To_FHIR(string segmentName, hl7:Segment segment) return
             entries.push(entry);
             return entries;
         }
+        "AL1" => {
+            r4:BundleEntry entry = {'resource: HL7V2_AL1_to_FHIR_AllerygyIntolerance(<hl7v23:AL1>segment)};
+            entries.push(entry);
+            return entries;
+        }
+        "EVN" => {
+            r4:BundleEntry entry = {'resource: HL7V2_EVN_to_FHIR_Provenance(<hl7v23:EVN>segment)};
+            entries.push(entry);
+            return entries;
+        }
+        "MSH" => {
+            r4:BundleEntry entry = {'resource: HL7V2_MSH_to_FHIR_MessageHeader(<hl7v23:MSH>segment)};
+            entries.push(entry);
+            return entries;
+        }
+        "PV2" => {
+            r4:BundleEntry entry = {'resource: HL7V2_PV2_to_FHIR_Encounter(<hl7v23:PV2>segment)};
+            entries.push(entry);
+            return entries;
+        }
     }
     return entries;
 }
@@ -46,6 +66,80 @@ function HL7V2_MSH_to_FHIR_MessageHeader(hl7v23:MSH msh) returns r4:MessageHeade
     meta: <r4:BaseMessageHeaderMeta>HL7V2_PT_to_FHIR_Meta(msh.msh11),
     language: HL7V2_CE_to_FHIR_code(msh.msh19),
     eventUri: ""
+};
+
+// --- Patient Administation
+function HL7V2_AL1_to_FHIR_AllerygyIntolerance(hl7v23:AL1 al1) returns r4:AllergyIntolerance {
+    r4:Coding[] coding = [{
+        code: al1.al11.toString(),
+        system: al1.al11.toString()
+    }];
+
+    r4:AllergyIntoleranceReaction[] allergyIntoleranceReaction = [{
+        manifestation: [{
+            text: al1.al15
+        }],
+        onset: al1.al16
+    }];
+
+    r4:AllergyIntolerance allergyIntolerance = {
+        clinicalStatus: {
+            coding: coding
+        },
+        category: [V2ToFHIR_GetAllergyIntoleranceCategory(al1.al12)],
+        'type: V2ToFHIR_GetAllergyIntoleranceType(al1.al12),
+        code: HL7V2_CE_to_FHIR_CodeableConcept(al1.al13),
+        criticality: V2ToFHIR_GetAllergyIntoleranceCriticality(al1.al14),
+        reaction: allergyIntoleranceReaction,
+        patient: {}
+    };
+
+    return allergyIntolerance;
+};
+
+// TODO: Ballerina FHIR EVN and HL7 EVN is different for some fields
+function HL7V2_EVN_to_FHIR_Provenance(hl7v23:EVN evn) returns r4:Provenance {
+    r4:Coding[] coding = [
+        {
+            display: evn.name
+        }
+    ];
+
+    r4:Extension[] extension = [
+        {
+            url: evn.evn4
+            // ,
+            // valueCodeableConcept: evn.evn4
+        }
+    ];
+
+    r4:CodeableConcept[] reason = [
+        {
+            extension: extension
+        }
+    ];
+
+    r4:ProvenanceAgent[] agent = [
+        {
+            who: HL7V2_XCN_to_FHIR_Reference(evn.evn5)
+        }
+    ];
+
+    r4:Provenance provenance = {
+        activity: {
+            coding: coding
+        },
+        recorded: evn.evn2.ts1,
+        reason: reason,
+        meta: {
+            extension: extension
+        },
+        agent: agent,
+        occurredDateTime: evn.evn6.ts1,
+        target: []
+    };
+
+    return provenance;
 };
 
 function HL7V2_NK1_to_FHIR_Patient(hl7v23:NK1 nk1) returns r4:Patient => {
@@ -78,6 +172,44 @@ function HL7V2_PID_to_FHIR_Patient(hl7v23:PID pid) returns r4:Patient => {
 function HL7V2_PV1_to_FHIR_Patient(hl7v23:PV1 pv1) returns r4:Patient => {
     extension: (pv1.pv116 != "") ? GetHL7v23_PV1_Extension(pv1.pv116) : ()
 };
+
+function HL7V2_PV2_to_FHIR_Encounter(hl7v23:PV2 pv2) returns r4:Encounter {
+    r4:EncounterLocation[] location = [
+        {
+            location: {
+                display: pv2.pv21.pl1 // TODO: location need to mapped correctly
+            }
+        }
+    ];
+
+    r4:Coding[] coding = [HL7V2_ID_to_FHIR_Coding(pv2.pv222)];
+
+    r4:EncounterParticipant[] participant = [{id: pv2.pv213.xcn1}]; // TODO: participant need to mapped correctly
+
+    r4:Encounter encounter = {
+        location: location,
+        reasonCode: HL7V2_GetCodeableConcepts(pv2.pv23),
+        length: {
+            value: <decimal>pv2.pv211
+        },
+        text: {
+            div: pv2.pv212,
+            status: "empty"
+        },
+        priority: {
+            text: pv2.pv225
+        },
+        meta: {
+            security: coding
+        },
+        participant: participant,
+        'class: {},
+        status: "in-progress"
+    };
+
+    return encounter;
+};
+
 
 // --- Financial Management ---
 function HL7V2_DG1_to_FHIR_Condition(hl7v23:DG1 dg1) returns r4:Condition => {
