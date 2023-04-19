@@ -1,5 +1,7 @@
 import wso2healthcare/healthcare.hl7v23;
 import wso2healthcare/healthcare.fhir.r4;
+import wso2healthcare/healthcare.hl7v24;
+import wso2healthcare/healthcare.hl7v25;
 
 function HL7V2_GetCodings(hl7v23:CE ce) returns r4:Coding[] {
     r4:Coding[] coding = [];
@@ -7,7 +9,7 @@ function HL7V2_GetCodings(hl7v23:CE ce) returns r4:Coding[] {
     return coding;
 }
 
-function HL7V2_XCN_to_FHIR_Reference(hl7v23:XCN xcn) returns r4:Reference => {
+function HL7V2_XCN_to_FHIR_Reference(hl7v23:XCN|hl7v24:XCN|hl7v25:XCN xcn) returns r4:Reference => {
     reference: xcn.xcn1
 };
 

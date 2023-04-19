@@ -15,4 +15,14 @@ version = "0.1.13"
 [[dependency]]
 org = "wso2healthcare"
 name = "healthcare.hl7v23"
-version = "0.1.9"
+version = "0.1.10"
+
+[[dependency]]
+org = "wso2healthcare"
+name = "healthcare.hl7v24"
+version = "0.1.2"
+
+[[dependency]]
+org = "wso2healthcare"
+name = "healthcare.hl7v25"
+version = "0.1.2"

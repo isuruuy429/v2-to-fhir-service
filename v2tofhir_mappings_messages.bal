@@ -6,19 +6,19 @@ import wso2healthcare/healthcare.fhir.r4;
 // URL: https://build.fhir.org/ig/HL7/v2-to-fhir/branches/master/message_maps.html
 // --------------------------------------------------------------------------------------------#
 
-function HL7V23_ADT_A01ToPatient(hl7v23:ADT_A01 msg) returns r4:Patient {
+function HL7V23_ADT_A01ToPatient(hl7v23:ADT_A01 msg) returns r4:Patient|error {
     r4:Patient patient = HL7V2_PID_to_FHIR_Patient(<hl7v23:PID>msg.pid);
 
     return patient;
 };
 
-function HL7V23_ADT_A04ToPatient(hl7v23:ADT_A04 msg) returns r4:Patient {
+function HL7V23_ADT_A04ToPatient(hl7v23:ADT_A04 msg) returns r4:Patient|error {
     r4:Patient patient = HL7V2_PID_to_FHIR_Patient(<hl7v23:PID>msg.pid);
 
     return patient;
 };
 
-function HL7V23_ORU_R01ToPatient(hl7v23:ORU_R01 msg) returns r4:Patient[] {
+function HL7V23_ORU_R01ToPatient(hl7v23:ORU_R01 msg) returns r4:Patient[]|error {
     hl7v23:RESPONSE[] responses = msg.response;
     r4:Patient[] patientArr = [];
     foreach hl7v23:RESPONSE res in responses {
@@ -30,7 +30,7 @@ function HL7V23_ORU_R01ToPatient(hl7v23:ORU_R01 msg) returns r4:Patient[] {
     return patientArr;
 }
 
-function HL7V23_ADR_A19ToPatient(hl7v23:ADR_A19 adrA19) returns r4:Patient[] {
+function HL7V23_ADR_A19ToPatient(hl7v23:ADR_A19 adrA19) returns r4:Patient[]|error {
 
     hl7v23:QUERY_RESPONSE[] queryResponses = adrA19.query_response;
     r4:Patient[] patientArr = [];

@@ -15,14 +15,14 @@ public function V2ToFHIR_GetStringExtension(string[] itemList) returns r4:String
     return stringExtensions;
 }
 
-public function V2ToFHIR_GetIntegerExtension(int[] itemList) returns r4:IntegerExtension[] {
+public function V2ToFHIR_GetIntegerExtension(string[] itemList) returns r4:IntegerExtension[]|error {
     r4:IntegerExtension[] integerExtensions = [];
 
-    foreach int item in itemList {
-        if item != -1 {
+    foreach string item in itemList {
+        if item != "-1" && item !="" {
             integerExtensions.push({
                 url: item.toString(),
-                valueInteger: item
+                valueInteger: check int:fromHexString(item)
             });
         }
     }

@@ -104,7 +104,7 @@ function HL7V2_XTN_to_FHIR_ContactPoint(hl7v23:XTN|hl7v24:XTN|hl7v25:XTN xtn) re
                 (CheckComputableANTLR([{identifier: xtn.xtn3, comparisonOperator: "NIN", valueList: ["Internet", "X.400"]}])) ? (xtn.xtn4) : (),
         use: V2ToFHIR_GetContactPointUse(xtn.xtn2),
         system: V2ToFHIR_GetContactPointSystem(xtn.xtn3),
-        extension: V2ToFHIR_GetIntegerExtension([<int>xtn.xtn5, <int>xtn.xtn6, <int>xtn.xtn7, <int>xtn.xtn8])
+        extension: V2ToFHIR_GetStringExtension([xtn.xtn5.toString(), xtn.xtn6.toString(), xtn.xtn7.toString(), xtn.xtn8.toString()])
     };
     if contactPoint.value == "" {
         return {};

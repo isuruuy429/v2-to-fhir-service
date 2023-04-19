@@ -21,7 +21,7 @@ service / on new http:Listener(9090) {
         hl7:Message|hl7:HL7Error parsedMessage = parser.parse(hL7WirePayload);
         if parsedMessage is hl7:Message {
             // transform the message to fhir
-            json transformToFHIRResult = transformToFHIR(parsedMessage);
+            json transformToFHIRResult = check transformToFHIR(parsedMessage);
             log:printInfo("Transformed FHIR message: " + transformToFHIRResult.toString());
             return transformToFHIRResult;
         } else {
