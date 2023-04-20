@@ -18,3 +18,9 @@ public function V2ToFHIR_GetAllergyIntoleranceCategory(hl7v23:IS|hl7v24:IS|hl7v2
 public function V2ToFHIR_GetAllergyIntoleranceType(string 'is) returns r4:AllergyIntoleranceType => 'is is r4:AllergyIntoleranceType ? 'is: "intolerance";
 
 public function V2ToFHIR_GetAllergyIntoleranceCriticality(hl7v23:IS|hl7v24:IS|hl7v25:IS 'is) returns r4:AllergyIntoleranceCriticality => 'is is r4:AllergyIntoleranceCriticality ? 'is: "high";
+
+public function V2ToFHIR_GetDiagnosticReportStatus(hl7v23:ID id) returns r4:DiagnosticReportStatus => id is r4:DiagnosticReportStatus ? id: "final";
+
+public function V2ToFHIR_GetServiceRequestIntent(string name) returns r4:ServiceRequestIntent => name is r4:ServiceRequestIntent ? name: "proposal";
+
+public function V2ToFHIR_GetServiceRequestPriority(hl7v23:ID id) returns r4:ServiceRequestPriority => id is r4:ServiceRequestPriority ? id: "stat";

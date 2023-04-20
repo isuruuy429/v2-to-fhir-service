@@ -39,3 +39,7 @@ function HL7V2_ID_to_FHIR_CodeableConcept(hl7v23:ID id) returns r4:CodeableConce
 function HL7V2_TS_to_FHIR_dateTime(hl7v23:TS ts) returns r4:dateTime {
     return ts.ts1;
 };
+
+function HL7V2_TS_to_FHIR_instant(hl7v23:TS ts) returns r4:instant {
+    return ts.ts1;
+};

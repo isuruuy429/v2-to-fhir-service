@@ -147,3 +147,25 @@ function HL7V2_CE_to_FHIR_code(hl7v23:CE|hl7v24:CE|hl7v25:CE ce) returns r4:code
     return code;
 };
 
+function HL7V2_EI_to_FHIR_Identifier(hl7v23:EI|hl7v24:EI|hl7v25:EI ei) returns r4:Identifier => {
+    value: (ei.ei1 != "") ? ei.ei1: ()
+};
+
+function HL7V2_GetCodeableConceptsGivenID(hl7v23:ID|hl7v24:ID|hl7v25:ID id) returns r4:CodeableConcept[] {
+    r4:CodeableConcept[] codeableConcept = [];
+    codeableConcept.push(HL7V2_ID_to_FHIR_CodeableConcept(id));
+    return codeableConcept;
+}
+
+function HL7V2_EI_to_FHIR_Coding(hl7v23:EI|hl7v24:EI|hl7v25:EI ei) returns r4:Coding => {
+    code: (ei.ei1 != "")? ei.ei1:(),
+    system: (ei.ei2 != "")? ei.ei2:()
+};
+
+function HL7V2_CE_to_FHIR_uri(hl7v23:CE|hl7v24:CE|hl7v25:CE ce) returns r4:uri {
+    return ce.ce1;
+};
+
+function HL7V2_XCN_to_FHIR_CodeableConcept(hl7v23:XCN|hl7v24:XCN|hl7v25:XCN xcn) returns r4:CodeableConcept => {
+    id: xcn.xcn1
+};
