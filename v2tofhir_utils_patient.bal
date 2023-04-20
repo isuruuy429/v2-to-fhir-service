@@ -6,10 +6,10 @@ import ballerina/log;
 
 public function GetHL7v23_PID_AdministrativeSex(string pid8) returns r4:PatientGender {
     match pid8 {
-        "F" => {
+        "M" => {
             return "male";
         }
-        "M" => {
+        "F" => {
             return "female";
         }
         "O" => {
