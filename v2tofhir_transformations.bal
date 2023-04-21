@@ -25,14 +25,16 @@ public function transformToFHIR(hl7:Message message) returns json|error {
         r4:Patient patient = check HL7V23_ADT_A04ToPatient(message);
         entries.push({'resource: patient});
         return bundle.toJson();
-    } else if message is hl7v23:ORU_R01 {
-        r4:Patient[] patients = check HL7V23_ORU_R01ToPatient(message);
-        foreach r4:Patient patient in patients {
-            r4:BundleEntry entry = {'resource: patient};
-            entries.push(entry);
-        }
-        return bundle.toJson();
-    } else {
+    } 
+    // else if message is hl7v23:ORU_R01 {
+    //     r4:Patient[] patients = check HL7V23_ORU_R01ToPatient(message);
+    //     foreach r4:Patient patient in patients {
+    //         r4:BundleEntry entry = {'resource: patient};
+    //         entries.push(entry);
+    //     }
+    //     return bundle.toJson();
+    // } 
+    else {
         message.entries().forEach(function(anydata triggerEventField) {
             string key;
             anydata segment;

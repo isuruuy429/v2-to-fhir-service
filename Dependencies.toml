@@ -404,7 +404,7 @@ modules = [
 [[package]]
 org = "wso2healthcare"
 name = "healthcare.hl7v23"
-version = "0.1.11"
+version = "0.1.12"
 dependencies = [
 	{org = "ballerina", name = "log"},
 	{org = "ballerina", name = "regex"},
@@ -417,7 +417,7 @@ modules = [
 [[package]]
 org = "wso2healthcare"
 name = "healthcare.hl7v24"
-version = "0.1.3"
+version = "0.1.4"
 dependencies = [
 	{org = "ballerina", name = "log"},
 	{org = "ballerina", name = "regex"},
@@ -430,7 +430,7 @@ modules = [
 [[package]]
 org = "wso2healthcare"
 name = "healthcare.hl7v25"
-version = "0.1.3"
+version = "0.1.4"
 dependencies = [
 	{org = "ballerina", name = "log"},
 	{org = "ballerina", name = "regex"},
