@@ -63,7 +63,7 @@ function Generic_Segment_To_FHIR(string segmentName, hl7:Segment segment) return
             return entries;
         }
         "ORC" => {
-            r4:BundleEntry entry = {'resource: HL7V2_ORC_to_FHIR_Immunization(<hl7v23:ORC>segment)};
+            r4:BundleEntry entry = {'resource: HL7V2_ORC_to_FHIR_Immunization(<hl7v23:ORC|hl7v24:ORC|hl7v25:ORC>segment)};
             entries.push(entry);
             return entries;
         }
@@ -395,23 +395,34 @@ function HL7V2_ORC_to_FHIR_DiagnosticReport(hl7v23:ORC|hl7v24:ORC|hl7v25:ORC orc
     return diagnosticReport;
 };
 
-function HL7V2_ORC_to_FHIR_Immunization(hl7v23:ORC orc) returns r4:Immunization {
+function HL7V2_ORC_to_FHIR_Immunization(hl7v23:ORC|hl7v24:ORC|hl7v25:ORC orc) returns r4:Immunization {
     // Identifier
     r4:Identifier[] identifierList = [];
+    r4:Identifier id1 = {};
+    if orc.orc2 is hl7v23:EI[] {
+        foreach var item in <hl7v23:EI[]>orc.orc2 {
+            r4:CodeableConcept tempCC = {coding: [HL7V2_EI_to_FHIR_Coding(item)]};
 
-    foreach var item in orc.orc2 {
-        r4:CodeableConcept tempCC = {coding: [HL7V2_EI_to_FHIR_Coding(item)]};
+            identifierList.push({
+                'type: tempCC
+            });
 
+            r4:CodeableConcept cc1 = {coding: [HL7V2_EI_to_FHIR_Coding(item)]};
+            id1 = {
+                'type: cc1
+            };
+        }
+    } else if orc.orc2 is hl7v24:EI|hl7v25:EI {
+        r4:CodeableConcept tempCC = {coding: [HL7V2_EI_to_FHIR_Coding(<hl7v24:EI|hl7v25:EI>orc.orc2)]};
         identifierList.push({
             'type: tempCC
         });
+
+        r4:CodeableConcept cc1 = {coding: [HL7V2_EI_to_FHIR_Coding(<hl7v24:EI|hl7v25:EI>orc.orc2)]};
+        id1 = {
+            'type: cc1
+        };
     }
-
-    r4:CodeableConcept cc1 = {coding: [HL7V2_EI_to_FHIR_Coding(orc.orc2[0])]};
-
-    r4:Identifier id1 = {
-        'type: cc1
-    };
 
     r4:CodeableConcept cc2 = {coding: [HL7V2_EI_to_FHIR_Coding(orc.orc3)]};
 
