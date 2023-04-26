@@ -295,7 +295,7 @@ function HL7V2_DG1_to_FHIR_Condition(hl7v23:DG1|hl7v24:DG1|hl7v25:DG1 dg1) retur
 
 function HL7V2_OBX_to_FHIR_Observation(hl7v23:OBX|hl7v24:OBX|hl7v25:OBX obx) returns r4:Observation => {
     code: HL7V2_CE_to_FHIR_CodeableConcept(obx.obx3),
-    valueString: (obx.obx5[0] != "") ? <string>obx.obx5[0] : (),
+    valueString: (obx.obx5[0] != "") ? obx.obx5[0].toString() : (),
     dataAbsentReason: HL7V2_ID_to_FHIR_CodeableConcept(obx.obx11),
     effectiveDateTime: HL7V2_TS_to_FHIR_dateTime(obx.obx14),
     // performer: [HL7V2_CE_to_FHIR_Organization(obx.obx15)],
